@@ -1,0 +1,54 @@
+{
+  "StartAt": "ECS",
+  "States": {
+    "ECS": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::ecs:runTask.sync",
+      "Parameters": {
+        "LaunchType": "FARGATE",
+        "Cluster": "arn:aws:ecs:ap-northeast-1:123456789012:cluster/stepfunctions-sample",
+        "TaskDefinition": "arn:aws:ecs:ap-northeast-1:123456789012:task-definition/stepfunctions-sample:1",
+        "Overrides": {
+          "ContainerOverrides": [
+            {
+              "Name": "app",
+              "Command": [
+                "./aws-stepfunctions-sync-samples",
+                "true"
+              ]
+            }
+          ]
+        },
+        "NetworkConfiguration": {
+          "AwsvpcConfiguration": {
+            "Subnets": [
+              "subnet-xxxxxxxxxxxxxxxxx",
+              "subnet-xxxxxxxxxxxxxxxxx"
+            ],
+            "SecurityGroups": [
+              "sg-xxxxxxxxxxxxxxxxx"
+            ],
+            "AssignPublicIp": "ENABLED"
+          }
+        }
+      },
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "FailState"
+        }
+      ],
+      "Next": "SuccessState"
+    },
+    "SuccessState": {
+      "Type": "Succeed"
+    },
+    "FailState": {
+      "Type": "Fail",
+      "Cause": "Invalid response.",
+      "Error": "Error"
+    }
+  }
+}
