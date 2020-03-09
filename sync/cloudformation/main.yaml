@@ -1,0 +1,47 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: aws-stepfunctions-samples
+
+Parameters:
+  Env:
+    Type: String
+    Default: dev
+
+  ProjectName:
+    Default: stepfunctions-sample
+    Type: String
+
+  ECSTaskExecutionRole:
+    Default: stepfunctions-sample-task-execution-role
+    Type: String
+
+  TaskRoleArn:
+    Type: String
+
+  AppImage:
+    Type: String
+
+
+Resources:
+  ECSTaskDefinition:
+    Type: "AWS::ECS::TaskDefinition"
+    Properties:
+      TaskRoleArn: !Ref TaskRoleArn
+      ExecutionRoleArn: !Ref ECSTaskExecutionRole
+      Family: !Sub ${Env}-${ProjectName}
+      Cpu: 256
+      Memory: 512
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      ContainerDefinitions:
+        - Name: app
+          Image: !Ref AppImage
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Sub ${Env}-${ProjectName}
+              awslogs-region: !Ref "AWS::Region"
+              awslogs-stream-prefix: !Ref Env
+          Memory: 512
+          Essential: true
