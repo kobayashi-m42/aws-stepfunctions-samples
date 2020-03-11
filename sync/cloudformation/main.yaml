@@ -21,6 +21,20 @@ Parameters:
   AppImage:
     Type: String
 
+  SubnetId1:
+    Type: String
+
+  SubnetId2:
+    Type: String
+
+  SecurityGroupIds:
+    Type: String
+
+  TaskCluster:
+    Type: String
+
+  StepfunctionsIAMRoleArn:
+    Type: String
 
 Resources:
   ECSTaskDefinition:
@@ -45,3 +59,66 @@ Resources:
               awslogs-stream-prefix: !Ref Env
           Memory: 512
           Essential: true
+
+  SyncStateMachine:
+    Type: "AWS::StepFunctions::StateMachine"
+    Properties:
+      StateMachineName: !Sub ${ProjectName}-sync-sample
+      DefinitionString:
+        !Sub
+        - |-
+          {
+            "StartAt": "ECS",
+            "States": {
+              "ECS": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::ecs:runTask.sync",
+                "Parameters": {
+                  "LaunchType": "FARGATE",
+                  "Cluster": "${TaskCluster}",
+                  "TaskDefinition": "${TaskDefinitionArn}",
+                  "Overrides": {
+                    "ContainerOverrides": [
+                      {
+                        "Name": "app",
+                        "Command": [
+                          "./aws-stepfunctions-sync-samples",
+                          "true"
+                        ]
+                      }
+                    ]
+                  },
+                  "NetworkConfiguration": {
+                    "AwsvpcConfiguration": {
+                      "Subnets": ["${SubnetId1}", "${SubnetId2}"],
+                      "SecurityGroups": ["${SecurityGroupIds}"],
+                      "AssignPublicIp": "DISABLED"
+                    }
+                  }
+                },
+                "Catch": [
+                  {
+                    "ErrorEquals": [
+                      "States.ALL"
+                    ],
+                    "Next": "FailState"
+                  }
+                ],
+                "Next": "SuccessState"
+              },
+              "SuccessState": {
+                "Type": "Succeed"
+              },
+              "FailState": {
+                "Type": "Fail",
+                "Cause": "Invalid response.",
+                "Error": "Error"
+              }
+            }
+          }
+        - SubnetId1: !Ref SubnetId1
+          SubnetId2: !Ref SubnetId2
+          SecurityGroupIds: !Ref SecurityGroupIds
+          TaskCluster: !Ref TaskCluster
+          TaskDefinitionArn: !Ref ECSTaskDefinition
+      RoleArn: !Ref StepfunctionsIAMRoleArn
