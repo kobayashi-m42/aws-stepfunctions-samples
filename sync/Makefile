@@ -10,3 +10,7 @@ deploy:
 		--parameter-overrides TaskRoleArn=${TASK_ROLE_ARN} AppImage=${APP_IMAGE} \
 		--template-file cloudformation/main.yaml \
 		--capabilities CAPABILITY_IAM
+
+delete-stack:
+	aws cloudformation delete-stack \
+		--stack-name $(STACK_NAME)
