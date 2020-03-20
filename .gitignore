@@ -2,3 +2,7 @@
 /.idea/
 
 /.envrc
+
+# parameters
+/waitForTaskToken/parameters.ini
+/sync/parameters.ini
