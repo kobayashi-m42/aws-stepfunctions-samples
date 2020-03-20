@@ -23,8 +23,12 @@ push-ecr.sh 123456789012
 
 makeコマンドでデプロイを行います。
 
-必要に応じて`--parameters`でオプションを指定してください。
-
 ```bash
 make deploy
 ```
+
+`aws cloudformation deploy`コマンドの`--parameter-overrides`オプションでパラメータの指定を行なっています。
+
+このサンプルでは複数のパラメータを指定するためiniファイルに定義しました。
+
+`parameters.sample.ini`を参考にしてください。
