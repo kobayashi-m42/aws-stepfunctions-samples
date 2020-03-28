@@ -1,7 +1,7 @@
 ENV        := dev
 STACK_NAME := $(ENV)-aws-stepfunctions-token-samples
 APP_NAME   := $(ENV)-stepfunctions-wait-token
-REGISTRY   := $(ACCOUNT_ID).dkr.ecr.ap-northeast-1.amazonaws.com
+REGISTRY   := $(AWS_ACCOUNT_ID).dkr.ecr.ap-northeast-1.amazonaws.com
 
 .PHONY: push
 push:
