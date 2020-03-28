@@ -1,0 +1,38 @@
+name: cfn-lint
+
+on: [push]
+
+jobs:
+  lint-templates:
+    name: lint templates
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: cfn-lint
+        uses: scottbrenner/cfn-lint-action@master
+        with:
+          args: "**/*.yaml"
+
+  push-image:
+    name: push image to ecr
+    needs: lint-templates
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: ap-northeast-1
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: push sync image
+        run: make push-sync
+
+      - name: push wait image
+        run: make push-sync
